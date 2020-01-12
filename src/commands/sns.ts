@@ -27,7 +27,7 @@ module.exports = {
     ])
     const spinner = print.spin(`Buscando notificações... 👨‍💻`)
     await system.run('sleep 10')
-    spinner.succeed('10 notificaoes encontras')
+    spinner.stopAndPersist({ symbol: '🗃', text: 'osnap!' })
     print.info(result)
   }
 }
