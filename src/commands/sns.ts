@@ -13,7 +13,7 @@ module.exports = {
 
    // print.debug(Topics)
     const isOnlyProduction = await prompt.confirm('Desejar Listar apenas tópicos de producão ?', true);
-   //print.debug(Topics.map(topic => topic.TopicArn))
+  
     const getEnvTag = (arn='') =>  arn.slice(-3).toLowerCase()
    
     let topicsArns = [];
@@ -50,7 +50,6 @@ module.exports = {
       Bucket,
       Prefix: topicChoosed + "/" + dateChoosed
     });
-    //print.info(`Foram encontradas ${keys.length} chaves`)
    // spinner.text = 'Carregando mensagens...'
     const msgs = await awsSqs.getAllMessages(keys,Bucket)
    // spinner.text = 'Mensagens carregadas...'
