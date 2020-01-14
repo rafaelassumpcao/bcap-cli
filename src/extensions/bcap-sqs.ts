@@ -17,7 +17,7 @@ module.exports = (toolbox: CustomToolbox) => {
     async function allBucketKeys(params: S3Api) {
       let keys = [];
       for (;;) {
-        var data = await s3.listObjects(params).promise();
+        let data = await s3.listObjects(params).promise();
     
         data.Contents.forEach((elem) => {
           keys = keys.concat(elem.Key);

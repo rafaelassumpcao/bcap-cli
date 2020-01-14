@@ -10,20 +10,19 @@ interface Topic {
   TopicArn: string
 }
 
- // .exclude(['meta', 'strings', 'print', 'filesystem', 'semver', 'system', 'prompt', 'http', 'template', 'patching'])
+// .exclude(['meta', 'strings', 'print', 'filesystem', 'semver', 'system', 'prompt', 'http', 'template', 'patching'])
 export interface CustomToolbox extends GluegunToolbox {
   http: null
-  system: null,
-  patching: null,
-  strings: null,
-  semver: null,
-  template: null,
-
+  system: null
+  patching: null
+  strings: null
+  semver: null
+  template: null
 }
 
 export interface S3Api {
-  Bucket: string,
-  Prefix: string,
+  Bucket: string
+  Prefix: string
   Key?: string
   Marker?: string
 }

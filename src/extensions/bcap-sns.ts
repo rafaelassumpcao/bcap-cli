@@ -11,9 +11,9 @@ module.exports = (toolbox: CustomToolbox) => {
 
   let cachedTopics: SNSTopics | false = false
 
-  //get topics
+  // get topics
   async function getTopics(): Promise<SNSTopics | false> {
-    //buscas os topicos do cache
+    // buscas os topicos do cache
     if (cachedTopics) return cachedTopics
 
     // busca do arquivo
@@ -63,8 +63,9 @@ module.exports = (toolbox: CustomToolbox) => {
 
     const topicsResult = await sns.listTopics().promise();
     for(let i=1; i <= 1000; i++) {
-      if(!topicsResult.NextToken) 
+      if(!topicsResult.NextToken) {
         break
+      }
       console.log(`buscando pagina ${i}`)
       const { 
         Topics: moreTopics,
