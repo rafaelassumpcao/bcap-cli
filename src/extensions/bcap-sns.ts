@@ -1,10 +1,11 @@
-import { GluegunToolbox } from 'gluegun'
-import { SNSTopics } from '../types'
+import { SNSTopics, CustomToolbox } from '../types'
 
-// import AWS from 'aws-sdk'
 
-module.exports = (toolbox: GluegunToolbox) => {
-  const { filesystem, print, system } = toolbox
+
+module.exports = (toolbox: CustomToolbox) => {
+  const AWS = require('aws-sdk');
+  const sns = new AWS.SNS({apiVersion: '2019-03-31', region: 'sa-east-1'})
+  const { filesystem, print } = toolbox
 
   const SNS_CACHE = `${filesystem.homedir()}/.topics`
 
@@ -19,14 +20,25 @@ module.exports = (toolbox: GluegunToolbox) => {
     if (!filesystem.exists(SNS_CACHE)) {
       // busca da amazon no primeiro acesso do usuario
       const spinner = print.spin('Carregando topicos SNS da nuvem...')
-      await system.run('sleep 5')
-      cachedTopics = await readFromCloud()
-      spinner.text = 'Gravando no Cache...'
-      await persist(cachedTopics)
-      spinner.succeed('Carregado')
+      try {
+        cachedTopics = await readFromCloud()
+        print.info('Gravando no cache...')
+        await persist(cachedTopics)
+        spinner.stop()
+      } catch (error) {
+        spinner.fail('Não foi possivel carrega tópicos da nuvem')
+        print.error(error)
+      }
     } else {
       // busca do arquivo cacheado
-      cachedTopics = await readFromLocalCache()
+      const spinner = print.spin('Carregando topicos SNS do cache local ...')
+      try {
+        cachedTopics = await readFromLocalCache()
+        spinner.stop();
+      } catch (error) {
+        spinner.fail('Não foi possivel carregar tópicos do cache local')
+        print.error(error)
+      }
     }
 
     return cachedTopics
@@ -39,32 +51,31 @@ module.exports = (toolbox: GluegunToolbox) => {
   }
 
   async function persist(data): Promise<void> {
-    return filesystem.writeAsync(SNS_CACHE, data)
+    try {
+      return filesystem.writeAsync(SNS_CACHE, data)
+    } catch (error) {
+      print.error(error)
+    }
   }
 
   async function readFromCloud(): Promise<SNSTopics | false> {
     // fake first read
-    return Promise.resolve({
-      Topics: [
-        {
-          TopicArn: 'arn:SNS_COBRANCA_RATEIO'
-        },
-        {
-          TopicArn: 'arn:SNS_CONTABILIZA_PRO_RATA'
-        },
-        {
-          TopicArn: 'arn:SNS_RESERVA_SALDO'
-        },
-        {
-          TopicArn: 'arn:SNS_COBRANCA_CLIENTE'
-        },
-        {
-          TopicArn: 'arn:SNS_TESTE'
-        }
-      ]
-    })
+
+    const topicsResult = await sns.listTopics().promise();
+    for(let i=1; i <= 1000; i++) {
+      if(!topicsResult.NextToken) 
+        break
+      console.log(`buscando pagina ${i}`)
+      const { 
+        Topics: moreTopics,
+        NextToken
+      } =  await sns.listTopics({ NextToken: topicsResult.NextToken }).promise()
+      topicsResult.NextToken = NextToken
+      topicsResult.Topics.push(moreTopics)
+    }
+    return Promise.resolve(topicsResult)
   }
 
   // load all topics
-  return (toolbox.awsSns = { getTopics })
+  return toolbox.awsSns = { getTopics }
 }
