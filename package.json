@@ -2,8 +2,9 @@
   "name": "bcap",
   "version": "0.0.3",
   "description": "bcap CLI",
-  "private": true,
+  "private": false,
   "types": "build/types/types.d.ts",
+  "repository": "https://github.com/rafaelassumpcao/bcap-cli.git",
   "bin": {
     "bcap": "bin/bcap"
   },
