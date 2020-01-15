@@ -48,7 +48,7 @@ module.exports = {
     dateChoosed = dateChoosed.split('-').map(Number).join('-')
     const pathToFile = 
       `${awsSqs.BASE_SNS_DIR}/${awsSqs.getDir(topicChoosed)}/${dateChoosed}.json`;
-    if(await filesystem.exists(pathToFile) === 'file') {
+    if(await filesystem.existsAsync(pathToFile) === 'file') {
       print.info(
         `Mensagem gerada anteriormente em:
           ${pathToFile}`
