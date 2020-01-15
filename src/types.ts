@@ -26,3 +26,7 @@ export interface S3Api {
   Key?: string
   Marker?: string
 }
+
+export interface S3ObjectResponse {
+  Body: Buffer
+}

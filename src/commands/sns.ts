@@ -4,7 +4,7 @@ module.exports = {
   name: 'sns',
   description: 'Busca por todas as notificações em um determinado dia',
   run: async (toolbox: CustomToolbox) => {
-    const { print, awsSns, awsSqs,prompt } = toolbox
+    const { print, awsSns, awsSqs,prompt, filesystem } = toolbox
     const Bucket = 'brasilcap-sns-history-notification';
 
     const spinner = print.spin('Carregando tópicos...')
@@ -24,7 +24,7 @@ module.exports = {
     }
   
 
-    const { topicChoosed, dateChoosed } = await prompt.ask([
+    let { topicChoosed, dateChoosed } = await prompt.ask([
       {
         type: 'autocomplete',
         name: 'topicChoosed',
@@ -45,13 +45,23 @@ module.exports = {
       }
     ])
 
-    spinner.start('Carregando chaves do bucket...')
-    const keys = await awsSqs.allBucketKeys({
+    dateChoosed = dateChoosed.split('-').map(Number).join('-')
+    const pathToFile = 
+      `${awsSqs.BASE_SNS_DIR}/${awsSqs.getDir(topicChoosed)}/${dateChoosed}.json`;
+    if(await filesystem.exists(pathToFile) === 'file') {
+      print.info(
+        `Mensagem gerada anteriormente em:
+          ${pathToFile}`
+      )
+      return;
+    }
+
+    spinner.start('Carregando obejtos do bucket...')
+   // spinner.text = 'Carregando mensagens...'
+    const msgs = await awsSqs.getMessages({
       Bucket,
       Prefix: topicChoosed + "/" + dateChoosed
-    });
-   // spinner.text = 'Carregando mensagens...'
-    const msgs = await awsSqs.getAllMessages(keys,Bucket)
+    })
    // spinner.text = 'Mensagens carregadas...'
    // spinner.text= `Salvando em ${awsSqs.BASE_SNS_DIR}`
     print.info(`Salvando em ${awsSqs.BASE_SNS_DIR}/${awsSqs.getDir(topicChoosed)}`)
