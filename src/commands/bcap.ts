@@ -4,6 +4,6 @@ module.exports = {
   name: 'bcap',
   description: 'Comando base para apresentar comandos',
   run: async (toolbox: CustomToolbox) => {
-    toolbox.print.info('foi')
+    toolbox.print.debug(toolbox.parameters.plugin)
   }
 }

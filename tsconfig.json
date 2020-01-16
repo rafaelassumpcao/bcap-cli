@@ -3,11 +3,12 @@
     "allowSyntheticDefaultImports": false,
     "experimentalDecorators": true,
     "lib": [
-      "es2015",
+      "es2019",
       "scripthost",
       "es2015.promise",
       "es2015.generator",
       "es2015.iterable",
+      //"ES2019.Object",
       "dom"
     ],
     "module": "commonjs",
