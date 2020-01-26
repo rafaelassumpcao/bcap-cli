@@ -19,6 +19,7 @@ module.exports = {
     const Bucket = 'brasilcap-sns-history-notification'
     // print.debug(util)
     if (options.list) {
+      print.info('A')
       await util.listingFolders({})
       // print.debug(dados)
       return
