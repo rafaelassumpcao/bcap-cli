@@ -19,7 +19,7 @@ module.exports = {
     const Bucket = 'brasilcap-sns-history-notification'
     // print.debug(util)
     if (options.list) {
-      const dados = await util.listingFolders({})
+      await util.listingFolders({})
       // print.debug(dados)
       return
       const path = `${util.BASE_DIR}/SNS/${options.list.split('.')[0]}.json`
