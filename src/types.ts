@@ -30,3 +30,18 @@ export interface S3Api {
 export interface S3ObjectResponse {
   Body: Buffer
 }
+
+export interface GlueGunAskItem {
+  name: string
+  normalized: boolean
+  message: string
+  value: string
+  input: string
+  index: number
+  cursor: number
+  level: number
+  indent: string
+  path: string
+  enabled: boolean
+  reset?: Function
+}

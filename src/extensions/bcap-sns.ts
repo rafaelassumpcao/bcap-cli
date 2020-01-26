@@ -1,13 +1,11 @@
 import { SNSTopics, CustomToolbox } from '../types'
 
-
-
 module.exports = (toolbox: CustomToolbox) => {
-  const AWS = require('aws-sdk');
-  const sns = new AWS.SNS({apiVersion: '2019-03-31', region: 'sa-east-1'})
+  const AWS = require('aws-sdk')
+  const sns = new AWS.SNS({ apiVersion: '2019-03-31', region: 'sa-east-1' })
   const { filesystem, print } = toolbox
 
-  const SNS_CACHE = `${filesystem.homedir()}/.topics`
+  const SNS_CACHE = `${filesystem.homedir()}/.bcap/.sns_topics`
 
   let cachedTopics: SNSTopics | false = false
 
@@ -26,7 +24,7 @@ module.exports = (toolbox: CustomToolbox) => {
         await persist(cachedTopics)
         spinner.stop()
       } catch (error) {
-        spinner.fail('Não foi possivel carrega tópicos da nuvem')
+        spinner.fail('Não foi possivel carregar tópicos da nuvem')
         print.error(error)
       }
     } else {
@@ -34,7 +32,7 @@ module.exports = (toolbox: CustomToolbox) => {
       const spinner = print.spin('Carregando topicos SNS do cache local ...')
       try {
         cachedTopics = await readFromLocalCache()
-        spinner.stop();
+        spinner.stop()
       } catch (error) {
         spinner.fail('Não foi possivel carregar tópicos do cache local')
         print.error(error)
@@ -60,17 +58,37 @@ module.exports = (toolbox: CustomToolbox) => {
 
   async function readFromCloud(): Promise<SNSTopics | false> {
     // fake first read
-
-    const topicsResult = await sns.listTopics().promise();
-    for(let i=1; i <= 1000; i++) {
-      if(!topicsResult.NextToken) {
+    return {
+      Topics: [
+        {
+          TopicArn: 'arn:arn:arn:arn:arn:SNS_TESTE_PRD'
+        },
+        {
+          TopicArn: 'arn:arn:arn:arn:arn:SNS_TESTE_1_PRD'
+        },
+        {
+          TopicArn: 'arn:arn:arn:arn:arn:SNS_TESTE_2_PRD'
+        },
+        {
+          TopicArn: 'arn:arn:arn:arn:arn:SNS_TESTE_3_PRD'
+        },
+        {
+          TopicArn: 'arn:arn:arn:arn:arn:SNS_TESTE_4_PRD'
+        },
+        {
+          TopicArn: 'arn:arn:arn:arn:arn:SNS_TESTE_5_PRD'
+        }
+      ]
+    }
+    const topicsResult = await sns.listTopics().promise()
+    for (let i = 1; i <= 1000; i++) {
+      if (!topicsResult.NextToken) {
         break
       }
       console.log(`buscando pagina ${i}`)
-      const { 
-        Topics: moreTopics,
-        NextToken
-      } =  await sns.listTopics({ NextToken: topicsResult.NextToken }).promise()
+      const { Topics: moreTopics, NextToken } = await sns
+        .listTopics({ NextToken: topicsResult.NextToken })
+        .promise()
       topicsResult.NextToken = NextToken
       topicsResult.Topics.push(moreTopics)
     }
@@ -78,5 +96,5 @@ module.exports = (toolbox: CustomToolbox) => {
   }
 
   // load all topics
-  return toolbox.awsSns = { getTopics }
+  return (toolbox.awsSns = { getTopics })
 }

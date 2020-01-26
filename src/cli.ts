@@ -9,10 +9,10 @@ async function run(argv) {
     .brand('bcap')
     .src(__dirname)
     .plugins('./node_modules', { matching: 'bcap-*', hidden: true })
-    .help() // provides default for help, h, --help, -h
-    .version() // provides default for version, v, --version, -v
+    // .help() // provides default for help, h, --help, -h
+    // .version() // provides default for version, v, --version, -v
     .exclude([
-      'meta',
+      // 'meta',
       'strings',
       'semver',
       'system',

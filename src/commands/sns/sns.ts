@@ -1,76 +1,101 @@
-import { CustomToolbox } from '../types'
+import { CustomToolbox } from '../../types'
 
 module.exports = {
   name: 'sns',
-  description: 'Busca por todas as notificações em um determinado dia',
+  description: `Busca por mensagens enviadas por tópicos SNS
+  \x1b[36m--list <path> \x1b[0m:
+            lista as mensagens geradas em um arquivo ao executar o comando bcap sns
+            bcap sns --list=SNS_EXEMPLO/2020-01-01.json (a extensão não é obrigatoria)
+  `,
   run: async (toolbox: CustomToolbox) => {
     const {
       print,
       awsSns,
-      awsSqs,
       prompt,
       filesystem,
+      util,
       parameters: { options }
     } = toolbox
     const Bucket = 'brasilcap-sns-history-notification'
-
-    print.debug(options)
+    // print.debug(util)
     if (options.list) {
-      const path = `${awsSqs.BASE_SNS_DIR}/${options.list.split('.')[0]}.json`
-      print.debug(path)
+      const dados = await util.listingFolders({})
+      // print.debug(dados)
+      return
+      const path = `${util.BASE_DIR}/SNS/${options.list.split('.')[0]}.json`
+      // print.debug(path)
+      const spinner = print.spin(`Procurando arquivo...`)
       if ((await filesystem.existsAsync(path)) === 'file') {
+        spinner.text = `Carregando arquivo ${path}`
         const data = await filesystem.readAsync(path, 'json')
-        print.debug(data)
+        spinner.stop()
+        // print.debug(data)
         const fields = Object.keys(data[0])
-        let { fiedsToDisplay } = await prompt.ask(
-          [
-            {
-              type: 'multiselect',
-              name: 'fiedsToDisplay',
-              message: 'Escolha os campos de apresentação',
-              hint: 'espaço - marcar/desmarcar',
-              choices: fields,
-              initial: fields
-            }
-            // {
-            //   type: 'select',
-            //   name: 'filterChoosed',
-            //   message: 'Escolha um campo para filtrar'
-          ] // }
-        )
+        const { fiedsToDisplay } = await prompt.ask({
+          type: 'multiselect',
+          name: 'fiedsToDisplay',
+          message: 'Escolha os campos de apresentação',
+          hint: 'espaço - marcar/desmarcar',
+          choices: fields,
+          initial: fields
+        })
         // print.debug(fiedsToDisplay)
-        // let shouldFilter = await prompt.confirm(
-        //   'Deseja Filtrar por algum campo?'
-        // )
-        //print.info(shouldFilter)
+        const shouldFilter = await prompt.confirm(
+          'Deseja Filtrar por algum campo?',
+          false
+        )
+        // print.info(shouldFilter)
 
-        let filterBy = await prompt.ask([
-          {
-            type: 'select',
-            name: 'filterBy',
-            message: 'Escolha um campo para filtrar',
-            skip: true,
-            choices: fiedsToDisplay
-          }
-        ])
+        // const { chaveFiltro, valorFiltro } = await prompt.ask([
+        //   {
+        //     type: 'select',
+        //     name: 'chaveFiltro',
+        //     message: 'Escolha um campo para filtrar',
+        //     skip: !shouldFilter,
+        //     choices: fiedsToDisplay
+        //   },
+        //   {
+        //     type: 'input',
+        //     name: 'valorFiltro',
+        //     message: 'Qual o termo de pesquisa?'
+        //   }
+        // ])
 
         // print.debug(shouldFilter)
-        print.debug(filterBy)
+        // print.debug(filterBy)
         // print.debug(fiedsToDisplay)
         // print.debug(data)
+        const TYPE_STRING = 'string'
+        spinner.start('Aguarde...gerando apresentação dos dados\n')
         const result = data.map(obj =>
-          Object.fromEntries([
-            ...fiedsToDisplay.map(({ value }) => [value, obj[value]])
-          ])
+          [
+            ...fiedsToDisplay.map(resp =>
+              typeof resp === TYPE_STRING
+                ? [resp, obj[resp]]
+                : [resp.value, obj[resp.value]]
+            )
+          ].reduce((o, [k, v]) => ({ ...o, [k]: v }), {})
         )
-        print.debug(result)
         // print.debug(result)
+        // print.debug(shouldFilter)
+        if (shouldFilter) {
+          print.table(
+            [
+              ['Resultado', 'linha'],
+              [JSON.stringify(result[0], null, 2), 2]
+            ],
+            {
+              format: 'lean'
+            }
+          )
+        }
         // print.table(
         //   [Object.keys(result[0]), ...result.map(x => Object.values(x))],
         //   {
-        //     format: 'markdown'
+        //     format: 'lean'
         //   }
         // )
+        spinner.stop()
         // data.map(obj =>
         //   fiedsToDisplay.reduce(
         //     (acc, { value }) => ({ [value]: obj[value] }),
@@ -82,6 +107,8 @@ module.exports = {
         //     ? true
         //     : filterBy.toString() === obj[filterBy].toString()
         // })
+      } else {
+        spinner.fail('Arquivo não encontrado')
       }
       return
     }
@@ -133,7 +160,7 @@ module.exports = {
       .split('-')
       .map(Number)
       .join('-')
-    const pathToFile = `${awsSqs.BASE_SNS_DIR}/${awsSqs.getDir(
+    const pathToFile = `${util.BASE_DIR}/SNS/${util.getDir(
       topicChoosed
     )}/${dateChoosed}.json`
     if ((await filesystem.existsAsync(pathToFile)) === 'file') {
@@ -146,7 +173,7 @@ module.exports = {
 
     spinner.start('Carregando obejtos do bucket...')
     // spinner.text = 'Carregando mensagens...'
-    const msgs = await awsSqs.getMessages({
+    const msgs = await util.getMessagesFromS3({
       Bucket,
       Prefix: topicChoosed + '/' + dateChoosed
     })
@@ -159,13 +186,12 @@ module.exports = {
     }
     // spinner.text = 'Mensagens carregadas...'
     // spinner.text= `Salvando em ${awsSqs.BASE_SNS_DIR}`
-    print.info(
-      `Salvando em ${awsSqs.BASE_SNS_DIR}/${awsSqs.getDir(topicChoosed)}`
-    )
-    await awsSqs.saveMessages({
+    print.info(`Salvando em ${util.BASE_DIR}/SNS/${util.getDir(topicChoosed)}`)
+    await util.saveMessages({
       messages: msgs,
       topic: topicChoosed,
-      date: dateChoosed
+      date: dateChoosed,
+      type: 'SNS'
     })
     spinner.succeed('Processo concluido com sucesso!')
   }

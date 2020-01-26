@@ -2,8 +2,16 @@ import { CustomToolbox } from '../types'
 
 module.exports = {
   name: 'bcap',
-  description: 'Comando base para apresentar comandos',
+  description: 'Seja Bem-vindo(a)',
   run: async (toolbox: CustomToolbox) => {
-    toolbox.print.debug(toolbox.parameters.plugin)
+    toolbox.print.info(`
+    ██████╗  ██████╗ █████╗ ██████╗
+    ██╔══██╗██╔════╝██╔══██╗██╔══██╗
+    ██████╔╝██║     ███████║██████╔╝
+    ██╔══██╗██║     ██╔══██║██╔═══╝
+    ██████╔╝╚██████╗██║  ██║██║
+    ╚═════╝  ╚═════╝╚═╝  ╚═╝╚═╝
+    `)
+    toolbox.print.printCommands(toolbox)
   }
 }
