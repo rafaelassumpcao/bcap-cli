@@ -58,28 +58,6 @@ module.exports = (toolbox: CustomToolbox) => {
 
   async function readFromCloud(): Promise<SNSTopics | false> {
     // fake first read
-    return {
-      Topics: [
-        {
-          TopicArn: 'arn:arn:arn:arn:arn:SNS_TESTE_PRD'
-        },
-        {
-          TopicArn: 'arn:arn:arn:arn:arn:SNS_TESTE_1_PRD'
-        },
-        {
-          TopicArn: 'arn:arn:arn:arn:arn:SNS_TESTE_2_PRD'
-        },
-        {
-          TopicArn: 'arn:arn:arn:arn:arn:SNS_TESTE_3_PRD'
-        },
-        {
-          TopicArn: 'arn:arn:arn:arn:arn:SNS_TESTE_4_PRD'
-        },
-        {
-          TopicArn: 'arn:arn:arn:arn:arn:SNS_TESTE_5_PRD'
-        }
-      ]
-    }
     const topicsResult = await sns.listTopics().promise()
     for (let i = 1; i <= 1000; i++) {
       if (!topicsResult.NextToken) {

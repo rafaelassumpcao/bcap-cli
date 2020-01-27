@@ -23,95 +23,6 @@ module.exports = {
       await util.listingFolders({})
       // print.debug(dados)
       return
-      const path = `${util.BASE_DIR}/SNS/${options.list.split('.')[0]}.json`
-      // print.debug(path)
-      const spinner = print.spin(`Procurando arquivo...`)
-      if ((await filesystem.existsAsync(path)) === 'file') {
-        spinner.text = `Carregando arquivo ${path}`
-        const data = await filesystem.readAsync(path, 'json')
-        spinner.stop()
-        // print.debug(data)
-        const fields = Object.keys(data[0])
-        const { fiedsToDisplay } = await prompt.ask({
-          type: 'multiselect',
-          name: 'fiedsToDisplay',
-          message: 'Escolha os campos de apresentação',
-          hint: 'espaço - marcar/desmarcar',
-          choices: fields,
-          initial: fields
-        })
-        // print.debug(fiedsToDisplay)
-        const shouldFilter = await prompt.confirm(
-          'Deseja Filtrar por algum campo?',
-          false
-        )
-        // print.info(shouldFilter)
-
-        // const { chaveFiltro, valorFiltro } = await prompt.ask([
-        //   {
-        //     type: 'select',
-        //     name: 'chaveFiltro',
-        //     message: 'Escolha um campo para filtrar',
-        //     skip: !shouldFilter,
-        //     choices: fiedsToDisplay
-        //   },
-        //   {
-        //     type: 'input',
-        //     name: 'valorFiltro',
-        //     message: 'Qual o termo de pesquisa?'
-        //   }
-        // ])
-
-        // print.debug(shouldFilter)
-        // print.debug(filterBy)
-        // print.debug(fiedsToDisplay)
-        // print.debug(data)
-        const TYPE_STRING = 'string'
-        spinner.start('Aguarde...gerando apresentação dos dados\n')
-        const result = data.map(obj =>
-          [
-            ...fiedsToDisplay.map(resp =>
-              typeof resp === TYPE_STRING
-                ? [resp, obj[resp]]
-                : [resp.value, obj[resp.value]]
-            )
-          ].reduce((o, [k, v]) => ({ ...o, [k]: v }), {})
-        )
-        // print.debug(result)
-        // print.debug(shouldFilter)
-        if (shouldFilter) {
-          print.table(
-            [
-              ['Resultado', 'linha'],
-              [JSON.stringify(result[0], null, 2), 2]
-            ],
-            {
-              format: 'lean'
-            }
-          )
-        }
-        // print.table(
-        //   [Object.keys(result[0]), ...result.map(x => Object.values(x))],
-        //   {
-        //     format: 'lean'
-        //   }
-        // )
-        spinner.stop()
-        // data.map(obj =>
-        //   fiedsToDisplay.reduce(
-        //     (acc, { value }) => ({ [value]: obj[value] }),
-        //     {}
-        //   )
-        // )
-        // .filter(obj => {
-        //   return !shouldFilter
-        //     ? true
-        //     : filterBy.toString() === obj[filterBy].toString()
-        // })
-      } else {
-        spinner.fail('Arquivo não encontrado')
-      }
-      return
     }
 
     const spinner = print.spin('Carregando tópicos...')
@@ -176,7 +87,7 @@ module.exports = {
     // spinner.text = 'Carregando mensagens...'
     const msgs = await util.getMessagesFromS3({
       Bucket,
-      Prefix: topicChoosed + '/' + dateChoosed
+      Prefix: `${topicChoosed}/${dateChoosed}/`
     })
 
     if (!msgs.length) {
