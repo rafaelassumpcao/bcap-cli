@@ -68,7 +68,7 @@ module.exports = (toolbox: CustomToolbox) => {
         .listTopics({ NextToken: topicsResult.NextToken })
         .promise()
       topicsResult.NextToken = NextToken
-      topicsResult.Topics.push(moreTopics)
+      topicsResult.Topics.push(...moreTopics)
     }
     return Promise.resolve(topicsResult)
   }
